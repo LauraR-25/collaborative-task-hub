@@ -1,0 +1,49 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Laura",
+      "password": "123456"
+    },
+    {
+      "id": 2,
+      "name": "Juan",
+      "password": "password123"
+    },
+    {
+      "id": 3,
+      "name": "Maria",
+      "password": "mypass"
+    }
+  ],
+  "projects": [
+    {
+      "id": 1,
+      "name": "Proyecto A",
+      "tasks": 12,
+      "members": 3,
+      "lastUpdate": "hoy"
+    },
+    {
+      "id": 2,
+      "name": "Proyecto B",
+      "tasks": 5,
+      "members": 2,
+      "lastUpdate": "ayer"
+    },
+    {
+      "id": 3,
+      "name": "Proyecto C",
+      "tasks": 8,
+      "members": 1,
+      "lastUpdate": "hace 2 días"
+    },
+    {
+      "id": 4,
+      "name": "Proyecto D",
+      "tasks": 0,
+      "members": 1,
+      "lastUpdate": "nunca"
+    }
+  ]
+}
