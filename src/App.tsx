@@ -5,6 +5,7 @@ import Login from "@/components/auth/Login";
 import Register from "@/components/auth/Register";
 import Navbar from "@/components/layout/Navbar";
 import Dashboard from "@/components/tasks/Dashboard";
+import KanbanBoard from "@/components/tasks/KanbanBoard";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
@@ -19,6 +20,14 @@ const App = () => (
           element={
             <PrivateRoute>
               <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/project/:projectId"
+          element={
+            <PrivateRoute>
+              <KanbanBoard />
             </PrivateRoute>
           }
         />

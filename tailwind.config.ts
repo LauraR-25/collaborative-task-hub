@@ -48,6 +48,17 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
+        // Colores personalizados para TaskFlow
+        taskflow: {
+          black: "#000000",
+          purple: "#8B5CF6",
+          pink: "#EC4899",
+          gray: {
+            750: "#374151",
+            800: "#1F2937",
+            900: "#111827",
+          },
+        },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",

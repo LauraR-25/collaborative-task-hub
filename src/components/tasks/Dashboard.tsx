@@ -1,20 +1,20 @@
-import { useState, useEffect, useCallback } from "react";
-import { taskService, type Task } from "@/services/taskService";
-import TaskForm from "./TaskForm";
-import TaskList from "./TaskList";
+import { useState, useEffect, useCallback } from 'react';
+import { taskService, type Task } from '@/services/taskService';
+import TaskForm from './TaskForm';
+import TaskList from './TaskList';
 
 const Dashboard = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const fetchTasks = useCallback(async () => {
     try {
-      const data = await taskService.getAll();
+      const data = await taskService.getAll(); // todas las tareas (sin filtrar por proyecto)
       setTasks(data);
-      setError("");
+      setError('');
     } catch {
-      setError("Error al cargar las tareas.");
+      setError('Error al cargar las tareas.');
     } finally {
       setLoading(false);
     }
@@ -26,19 +26,23 @@ const Dashboard = () => {
 
   const handleAdd = async (title: string) => {
     try {
-      const newTask = await taskService.create(title);
+      const newTask = await taskService.create({
+        title,
+        status: 'todo',
+        project_id: 'proj1', // proyecto mock por defecto
+      });
       setTasks((prev) => [newTask, ...prev]);
     } catch {
-      setError("Error al crear la tarea.");
+      setError('Error al crear la tarea.');
     }
   };
 
-  const handleUpdate = async (id: string, updates: Partial<Pick<Task, "title" | "completed">>) => {
+  const handleUpdate = async (id: string, updates: Partial<Omit<Task, 'id' | 'created_at' | 'updated_at'>>) => {
     try {
       const updated = await taskService.update(id, updates);
       setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
     } catch {
-      setError("Error al actualizar la tarea.");
+      setError('Error al actualizar la tarea.');
     }
   };
 
@@ -47,15 +51,13 @@ const Dashboard = () => {
       await taskService.delete(id);
       setTasks((prev) => prev.filter((t) => t.id !== id));
     } catch {
-      setError("Error al eliminar la tarea.");
+      setError('Error al eliminar la tarea.');
     }
   };
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 pt-20 pb-12">
-      <h1 className="mb-8 font-heading text-3xl font-semibold text-foreground">
-        Tareas
-      </h1>
+      <h1 className="mb-8 font-heading text-3xl font-semibold text-foreground">Tareas</h1>
 
       <div className="bg-surface shadow-[var(--shadow-slab)]">
         <div className="border-b border-border p-4">
@@ -63,9 +65,7 @@ const Dashboard = () => {
         </div>
 
         {error && (
-          <div className="border-b border-border bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            {error}
-          </div>
+          <div className="bg-red-900 border border-red-700 text-red-200 p-4 rounded mb-6">{error}</div>
         )}
 
         {loading ? (
