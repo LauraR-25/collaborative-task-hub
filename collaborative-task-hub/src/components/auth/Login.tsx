@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState(''); // Cambiado de email a name
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const { login } = useAuth();
@@ -13,7 +13,7 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await login({ email, password });
+      await login({ name, password }); // Envía name, no email
       navigate('/dashboard');
     } catch (err) {
       setError('Credenciales incorrectas');
@@ -27,12 +27,12 @@ const Login = () => {
       {error && <div className="login-error">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="email">Correo Electrónico</label>
+          <label htmlFor="name">Nombre de usuario</label>
           <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             className="form-input"
             required
           />

@@ -1,12 +1,12 @@
 import axios from 'axios';
 import { getToken, setToken } from '@/lib/tokenStore';
 
-const API_BASE_URL = import.meta.env.VITE_API_GATEWAY_URL || 'https://api.tasksflowcenter.online';
+const API_BASE_URL = import.meta.env.VITE_API_GATEWAY_URL || 'https://api.taskflowcenter.online';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
-  withCredentials: true, // necesario para enviar/recibir cookies HttpOnly
+  withCredentials: true, // necesario para enviar/recibir cookies HttpOnly (refresh token)
 });
 
 // Interceptor para añadir el token a cada petición
