@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState } from 'react';
 
 interface TaskFormProps {
   onAdd: (title: string) => Promise<void>;
 }
 
 const TaskForm = ({ onAdd }: TaskFormProps) => {
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState('');
   const [committing, setCommitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -16,7 +16,7 @@ const TaskForm = ({ onAdd }: TaskFormProps) => {
     setCommitting(true);
     await new Promise((resolve) => setTimeout(resolve, 800));
     await onAdd(trimmed);
-    setTitle("");
+    setTitle('');
     setCommitting(false);
   };
 
@@ -37,7 +37,7 @@ const TaskForm = ({ onAdd }: TaskFormProps) => {
         {committing ? (
           <span className="inline-block h-2 w-2 rounded-full bg-primary-foreground animate-heartbeat" />
         ) : (
-          "Agregar"
+          'Agregar'
         )}
       </button>
     </form>

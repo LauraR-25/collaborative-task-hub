@@ -1,9 +1,9 @@
-import { useState } from "react";
-import type { Task } from "@/services/taskService";
+import { useState } from 'react';
+import type { Task } from '@/services/taskService';
 
 interface TaskItemProps {
   task: Task;
-  onUpdate: (id: string, updates: Partial<Pick<Task, "title" | "completed">>) => Promise<void>;
+  onUpdate: (id: string, updates: Partial<Omit<Task, 'id' | 'created_at' | 'updated_at'>>) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
 
@@ -20,7 +20,6 @@ const TaskItem = ({ task, onUpdate, onDelete }: TaskItemProps) => {
       return;
     }
     setCommitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
     await onUpdate(task.id, { title: trimmed });
     setEditing(false);
     setCommitting(false);
@@ -31,30 +30,33 @@ const TaskItem = ({ task, onUpdate, onDelete }: TaskItemProps) => {
     setEditing(false);
   };
 
-  const handleToggle = () => {
-    onUpdate(task.id, { completed: !task.completed });
+  const handleToggle = async () => {
+    const newStatus = task.status === 'done' ? 'todo' : 'done';
+    await onUpdate(task.id, { status: newStatus });
   };
+
+  const isDone = task.status === 'done';
 
   return (
     <div
       className={`flex items-center gap-3 border-b border-border px-4 py-3 transition-colors ${
-        editing ? "bg-surface-active" : "bg-surface"
+        editing ? 'bg-surface-active' : 'bg-surface'
       }`}
     >
       {/* Checkbox */}
       <button
         onClick={handleToggle}
         className="flex h-5 w-5 shrink-0 items-center justify-center border border-border cursor-pointer"
-        aria-label={task.completed ? "Marcar como pendiente" : "Marcar como completada"}
+        aria-label={isDone ? 'Marcar como pendiente' : 'Marcar como completada'}
       >
-        {task.completed && (
+        {isDone && (
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-primary">
             <path d="M2 6L5 9L10 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         )}
       </button>
 
-      {/* Content */}
+      {/* Contenido */}
       <div className="flex-1 min-w-0">
         {editing ? (
           <input
@@ -62,16 +64,18 @@ const TaskItem = ({ task, onUpdate, onDelete }: TaskItemProps) => {
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") handleSave();
-              if (e.key === "Escape") handleCancel();
+              if (e.key === 'Enter') handleSave();
+              if (e.key === 'Escape') handleCancel();
             }}
             autoFocus
+            placeholder="Título de la tarea"
+            aria-label="Editar tarea"
             className="w-full border border-input bg-surface px-2 py-1 font-body text-foreground outline-none focus:border-primary"
           />
         ) : (
           <span
             className={`block truncate font-body text-foreground ${
-              task.completed ? "line-through text-muted-foreground" : ""
+              isDone ? 'line-through text-muted-foreground' : ''
             }`}
           >
             {task.title}
@@ -79,7 +83,7 @@ const TaskItem = ({ task, onUpdate, onDelete }: TaskItemProps) => {
         )}
       </div>
 
-      {/* Actions */}
+      {/* Acciones */}
       <div className="flex shrink-0 items-center gap-2">
         {editing ? (
           <>
@@ -91,7 +95,7 @@ const TaskItem = ({ task, onUpdate, onDelete }: TaskItemProps) => {
               {committing ? (
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary-foreground animate-heartbeat" />
               ) : (
-                "Guardar"
+                'Guardar'
               )}
             </button>
             <button

@@ -1,92 +1,78 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
-import { jwtDecode } from "jwt-decode";
-import { authService, type LoginPayload, type RegisterPayload } from "@/services/authService";
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import { authService, LoginPayload, RegisterPayload } from '@/services/authService';
+import { setToken as setGlobalToken } from '@/lib/tokenStore';
 
-interface DecodedToken {
-  sub: string;
+interface User {
+  id: string;
   name: string;
   email: string;
-  exp: number;
 }
 
 interface AuthState {
   token: string | null;
-  user: { name: string; email: string } | null;
+  user: User | null;
   isAuthenticated: boolean;
 }
 
 interface AuthContextType extends AuthState {
   login: (payload: LoginPayload) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-function decodeAndValidateToken(token: string): DecodedToken | null {
-  try {
-    const decoded = jwtDecode<DecodedToken>(token);
-    if (decoded.exp * 1000 < Date.now()) return null;
-    return decoded;
-  } catch {
-    return null;
-  }
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      const decoded = decodeAndValidateToken(token);
-      if (decoded) {
-        return {
-          token,
-          user: { name: decoded.name, email: decoded.email },
-          isAuthenticated: true,
-        };
-      }
-      localStorage.removeItem("token");
-    }
-    return { token: null, user: null, isAuthenticated: false };
+  const [state, setState] = useState<AuthState>({
+    token: null,
+    user: null,
+    isAuthenticated: false,
   });
 
-  const setAuth = useCallback((token: string) => {
-    const decoded = decodeAndValidateToken(token);
-    if (!decoded) throw new Error("Invalid token");
-    localStorage.setItem("token", token);
+  // Intento de refresh al montar la app (por si hay cookie válida)
+  useEffect(() => {
+    const attemptRefresh = async () => {
+      try {
+        // En modo mock, no hay refresh real, así que no hacemos nada
+        // Podríamos intentar leer un token guardado, pero por ahora lo omitimos
+      } catch {
+        // No hay sesión activa
+      }
+    };
+    attemptRefresh();
+  }, []);
+
+  const setAuth = useCallback((response: { access_token: string; user_id: string; email: string; name: string }) => {
+    setGlobalToken(response.access_token);
     setState({
-      token,
-      user: { name: decoded.name, email: decoded.email },
+      token: response.access_token,
+      user: { id: response.user_id, name: response.name, email: response.email },
       isAuthenticated: true,
     });
   }, []);
 
-  const login = useCallback(async (payload: LoginPayload) => {
-    const { token } = await authService.login(payload);
-    setAuth(token);
-  }, [setAuth]);
-
-  const register = useCallback(async (payload: RegisterPayload) => {
-    const { token } = await authService.register(payload);
-    setAuth(token);
-  }, [setAuth]);
-
-  const logout = useCallback(() => {
-    localStorage.removeItem("token");
+  const clearAuth = useCallback(() => {
+    setGlobalToken(null);
     setState({ token: null, user: null, isAuthenticated: false });
   }, []);
 
-  // Check token expiry periodically
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        const decoded = decodeAndValidateToken(token);
-        if (!decoded) logout();
-      }
-    }, 60000);
-    return () => clearInterval(interval);
-  }, [logout]);
+  const login = useCallback(async (payload: LoginPayload) => {
+    const response = await authService.login(payload);
+    setAuth(response);
+  }, [setAuth]);
+
+  const register = useCallback(async (payload: RegisterPayload) => {
+    const response = await authService.register(payload);
+    setAuth(response);
+  }, [setAuth]);
+
+  const logout = useCallback(async () => {
+    try {
+      await authService.logout();
+    } finally {
+      clearAuth();
+    }
+  }, [clearAuth]);
 
   return (
     <AuthContext.Provider value={{ ...state, login, register, logout }}>
@@ -97,6 +83,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  if (!ctx) throw new Error('useAuth debe usarse dentro de AuthProvider');
   return ctx;
 }

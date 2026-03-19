@@ -1,32 +1,22 @@
-import React, { useState } from "react";
-import "./Login.css";
+import { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import './Login.css';
 
 const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const { login } = useAuth();
   const navigate = useNavigate();
-  const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [email, setEmail] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (showForgotPassword) {
-      if (email) {
-        alert(`Se ha enviado un enlace de recuperación a ${email}`);
-        setShowForgotPassword(false);
-      } else {
-        setError("Por favor, ingresa tu correo electrónico.");
-      }
-    } else {
-      if (name === "Laura" && password === "123456") {
-        alert("Inicio de sesión exitoso");
-        navigate('/dashboard');
-      } else {
-        setError("Nombre o contraseña incorrectos");
-      }
+    try {
+      await login({ email, password });
+      navigate('/dashboard');
+    } catch (err) {
+      setError('Credenciales incorrectas');
     }
   };
 
@@ -36,70 +26,38 @@ const Login = () => {
       <p className="login-subtitle">Ingresa tus datos para continuar.</p>
       {error && <div className="login-error">{error}</div>}
       <form onSubmit={handleSubmit}>
-        {showForgotPassword ? (
-          <div className="form-group">
-            <label htmlFor="email">Correo Electrónico</label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="form-input"
-              required
-            />
-          </div>
-        ) : (
-          <>
-            <div className="form-group">
-              <label htmlFor="name">Nombre</label>
-              <input
-                type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="form-input"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="password">Contraseña</label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="form-input"
-                required
-              />
-            </div>
-          </>
-        )}
-        <button type="submit" className="form-button">
-          {showForgotPassword ? "Recuperar Contraseña" : "Iniciar Sesión"}
-        </button>
+        <div className="form-group">
+          <label htmlFor="email">Correo Electrónico</label>
+          <input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="form-input"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="password">Contraseña</label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="form-input"
+            required
+          />
+        </div>
+        <button type="submit" className="form-button">Iniciar Sesión</button>
       </form>
-      <div className="form-footer">
-        {showForgotPassword ? (
-          <button
-            onClick={() => {
-              setShowForgotPassword(false);
-              setError("");
-            }}
-            className="form-link"
-          >
-            Volver a Iniciar Sesión
-          </button>
-        ) : (
-          <button
-            onClick={() => {
-              setShowForgotPassword(true);
-              setError("");
-            }}
-            className="form-link"
-          >
-            ¿Olvidaste tu contraseña?
-          </button>
-        )}
+      <div className="text-center mt-4">
+        <span className="text-sm text-gray-600">¿No tienes cuenta? </span>
+        <button
+          onClick={() => navigate('/register')}
+          className="text-sm text-blue-600 hover:underline"
+        >
+          Regístrate
+        </button>
       </div>
     </div>
   );
