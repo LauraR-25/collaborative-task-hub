@@ -9,35 +9,31 @@ interface ProjectItemProps {
 
 const ProjectItem = ({ project }: ProjectItemProps) => {
   const formatLastActivity = (date?: string) => {
-    if (!date) return 'Nunca';
+    if (!date) return 'nunca';
     const now = new Date();
     const activityDate = new Date(date);
     const diffDays = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 3600 * 24));
 
-    if (diffDays === 0) return 'Hoy';
-    if (diffDays === 1) return 'Ayer';
+    if (diffDays === 0) return 'hoy';
+    if (diffDays === 1) return 'ayer';
     if (diffDays < 7) return `${diffDays} días`;
     return activityDate.toLocaleDateString();
   };
 
   return (
     <Link to={`/project/${project.id}`}>
-      <Card className="bg-gray-800 border-gray-700 hover:bg-gray-750 transition-colors cursor-pointer">
+      <Card className="transition-colors cursor-pointer hover:bg-muted">
         <CardHeader>
-          <CardTitle className="text-white text-lg">{project.name}</CardTitle>
+          <CardTitle className="text-lg">{project.name}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-300 text-sm mb-4">{project.description || 'Sin descripción'}</p>
-          <div className="flex justify-between items-center text-sm">
-            <div className="flex gap-4">
-              <Badge variant="secondary" className="bg-purple-600 text-white">
-                {project.task_count || 0} tareas
-              </Badge>
-              <Badge variant="outline" className="border-pink-500 text-pink-400">
-                {project.member_count || 1} miembros
-              </Badge>
+          <p className="text-sm text-muted-foreground mb-4">{project.description || 'Sin descripción'}</p>
+          <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+            <div className="flex gap-3">
+              <Badge variant="secondary">{project.task_count || 0} tareas</Badge>
+              <Badge variant="outline">{project.member_count || 1} miembros</Badge>
             </div>
-            <span className="text-gray-400">Última: {formatLastActivity(project.last_activity)}</span>
+            <span className="text-muted-foreground">Última: {formatLastActivity(project.last_activity)}</span>
           </div>
         </CardContent>
       </Card>

@@ -36,14 +36,19 @@ const KanbanBoard = () => {
     fetchData();
   }, [fetchData]);
 
-  const handleAddTask = async (title: string) => {
+  const handleAddTask = async ({ title, tagIds }: { title: string; tagIds: string[] }) => {
     if (!projectId) return;
     try {
       const newTask = await taskService.create({
         title,
-        status: 'todo',
+        status: 'pendiente',
         project_id: projectId,
       });
+
+      if (tagIds.length) {
+        await Promise.all(tagIds.map((tagId) => taskService.addTag(newTask.id, tagId)));
+      }
+
       setTasks((prev) => [newTask, ...prev]);
     } catch {
       setError('Error al crear la tarea.');
@@ -78,49 +83,62 @@ const KanbanBoard = () => {
     [handleUpdateTask]
   );
 
-  const columns: { id: Task['status']; title: string; color: string }[] = [
-    { id: 'todo', title: 'Pendiente', color: 'bg-red-500' },
-    { id: 'in_progress', title: 'En Progreso', color: 'bg-yellow-500' },
-    { id: 'done', title: 'Completada', color: 'bg-green-500' },
+  const columns: { id: Task['status']; title: string }[] = [
+    { id: 'pendiente', title: 'PENDIENTES' },
+    { id: 'en_progreso', title: 'EN PROGRESO' },
+    { id: 'completada', title: 'COMPLETADAS' },
+    { id: 'bloqueada', title: 'BLOQUEADAS' },
   ];
 
   if (loading) {
-    return <div className="text-center py-12">Cargando proyecto...</div>;
+    return <div className="px-6 pt-20 text-center py-12">Cargando proyecto...</div>;
   }
 
   if (!project) {
-    return <div className="text-center py-12">Proyecto no encontrado.</div>;
+    return <div className="px-6 pt-20 text-center py-12">Proyecto no encontrado.</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
+    <div className="min-h-screen bg-background text-foreground px-6 pt-20 pb-6">
       <div className="max-w-7xl mx-auto">
         <header className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <Link to="/" className="hover:no-underline">
-              <Button variant="ghost" className="text-purple-400 hover:text-purple-300">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Volver
-              </Button>
-            </Link>
-            <h1 className="text-3xl font-bold text-purple-400">{project.name}</h1>
+          <div className="grid grid-cols-3 items-center gap-4">
+            <div>
+              <Link to="/dashboard" className="hover:no-underline">
+                <Button variant="ghost">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Volver
+                </Button>
+              </Link>
+            </div>
+            <h1 className="text-center text-xl font-semibold">Proyecto: {project.name}</h1>
+            <div />
           </div>
-          <p className="text-gray-300 mb-4">{project.description || 'Sin descripción'}</p>
-          <TaskForm onAdd={handleAddTask} />
+
+          <div className="mt-4 grid grid-cols-3 items-center gap-4">
+            <div>
+              <TaskForm onAdd={handleAddTask} />
+            </div>
+            <div className="text-center text-sm text-muted-foreground">
+              {(project.member_count || 1)} miembros
+            </div>
+            <div />
+          </div>
         </header>
 
         {error && (
-          <div className="bg-red-900 border border-red-700 text-red-200 p-4 rounded mb-6">{error}</div>
+          <div className="rounded border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive mb-6">
+            {error}
+          </div>
         )}
 
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {columns.map((column) => (
               <KanbanColumn
                 key={column.id}
                 id={column.id}
                 title={column.title}
-                color={column.color}
                 tasks={tasks.filter((task) => task.status === column.id)}
                 onUpdate={handleUpdateTask}
                 onDelete={handleDeleteTask}

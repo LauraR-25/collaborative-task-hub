@@ -54,6 +54,31 @@
   box-shadow: 0 0 5px rgba(127, 90, 240, 0.5);
 }
 
+.password-field {
+  position: relative;
+}
+
+.form-input--with-toggle {
+  padding-right: 84px;
+}
+
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #4a4e69;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.toggle-password:hover {
+  color: #7f5af0;
+}
+
 .form-button {
   width: 100%;
   padding: 12px;

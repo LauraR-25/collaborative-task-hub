@@ -10,7 +10,9 @@ RUN corepack enable && pnpm install --frozen-lockfile
 COPY . .
 
 # Argumento para la URL de la API (se pasa en build time)
-ARG VITE_API_GATEWAY_URL=http://localhost:8080
+# OJO: Vite “hornea” estas vars en build time. Si no se pasa este build-arg,
+# el frontend quedaría apuntando al valor por defecto.
+ARG VITE_API_GATEWAY_URL=https://api.tasksflowcenter.online
 ENV VITE_API_GATEWAY_URL=$VITE_API_GATEWAY_URL
 
 # Construir la aplicación

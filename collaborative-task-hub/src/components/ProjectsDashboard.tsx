@@ -1,10 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { projectService, type Project } from '@/services/projectService'; 
-import ProjectList from './ProjectsList'; 
+import { projectService, type Project } from '@/services/projectService';
+import ProjectList from './ProjectsList';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import ProjectForm from './ProjectForm';
-import ProjectItem from './ProjectsItem'; 
 
 
 const ProjectsDashboard = () => {
@@ -42,7 +40,7 @@ const ProjectsDashboard = () => {
   );
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto px-6 pt-20 pb-6">
       <h1 className="text-3xl font-bold mb-6">Mis Proyectos</h1>
       
       <div className="flex justify-between items-center mb-6">
@@ -56,7 +54,11 @@ const ProjectsDashboard = () => {
         <ProjectForm onAdd={handleAddProject} />
       </div>
 
-      {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
+      {error && (
+        <div className="rounded border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive mb-4">
+          {error}
+        </div>
+      )}
 
       {loading ? (
         <div className="text-center py-12">Cargando proyectos...</div>

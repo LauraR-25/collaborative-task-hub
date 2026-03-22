@@ -64,6 +64,15 @@ This project is built with:
 
 Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
 
+### Docker note (API URL)
+
+When building the Docker image, `VITE_API_GATEWAY_URL` is baked into the static build at **build time**.
+If you need a different API URL, build with:
+
+```sh
+docker build --build-arg VITE_API_GATEWAY_URL=https://your-api.example.com -t collaborative-task-hub .
+```
+
 ## Can I connect a custom domain to my Lovable project?
 
 Yes, you can!

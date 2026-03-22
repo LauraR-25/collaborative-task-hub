@@ -24,17 +24,11 @@ const Dashboard = () => {
     fetchTasks();
   }, [fetchTasks]);
 
-  const handleAdd = async (title: string) => {
-    try {
-      const newTask = await taskService.create({
-        title,
-        status: 'todo',
-        project_id: 'proj1', // proyecto mock por defecto
-      });
-      setTasks((prev) => [newTask, ...prev]);
-    } catch {
-      setError('Error al crear la tarea.');
-    }
+  const handleAdd = async ({ title }: { title: string; tagIds: string[] }) => {
+    // Esta pantalla no se usa en el flujo principal (router) y no tiene project_id válido.
+    // Evitamos enviar un project_id inválido al backend.
+    setError('Selecciona un proyecto para crear tareas.');
+    void title;
   };
 
   const handleUpdate = async (id: string, updates: Partial<Omit<Task, 'id' | 'created_at' | 'updated_at'>>) => {

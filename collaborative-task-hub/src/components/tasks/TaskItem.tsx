@@ -31,11 +31,11 @@ const TaskItem = ({ task, onUpdate, onDelete }: TaskItemProps) => {
   };
 
   const handleToggle = async () => {
-    const newStatus = task.status === 'done' ? 'todo' : 'done';
+    const newStatus = task.status === 'completada' ? 'pendiente' : 'completada';
     await onUpdate(task.id, { status: newStatus });
   };
 
-  const isDone = task.status === 'done';
+  const isDone = task.status === 'completada';
 
   return (
     <div

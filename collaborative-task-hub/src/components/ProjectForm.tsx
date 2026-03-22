@@ -34,32 +34,30 @@ const ProjectForm = ({ onAdd }: ProjectFormProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-purple-600 hover:bg-purple-700 text-white">
+        <Button>
           ➕ Nuevo Proyecto
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-gray-900 border-gray-700">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-white">Crear Nuevo Proyecto</DialogTitle>
+          <DialogTitle>Crear Nuevo Proyecto</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             placeholder="Nombre del proyecto"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="bg-gray-800 border-gray-600 text-white"
             required
           />
           <Textarea
             placeholder="Descripción (opcional)"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="bg-gray-800 border-gray-600 text-white"
           />
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+            className="w-full"
           >
             {loading ? 'Creando...' : 'Crear Proyecto'}
           </Button>

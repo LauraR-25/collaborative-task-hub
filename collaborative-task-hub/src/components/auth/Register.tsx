@@ -6,6 +6,7 @@ const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -14,11 +15,16 @@ const Register = () => {
     e.preventDefault();
     setError('');
     try {
+      if (password.length < 8) {
+        setError('La contraseña debe tener al menos 8 caracteres');
+        return;
+      }
       await register({ name, email, password });
       navigate('/dashboard');
     } catch (err: any) {
       console.error('Register error:', err);
-      setError(err.message || 'Error al registrarse');
+      const apiMessage = err?.response?.data?.message;
+      setError(apiMessage || err?.message || 'Error al registrarse');
     }
   };
 
@@ -52,14 +58,25 @@ const Register = () => {
         </div>
         <div className="mb-6">
           <label htmlFor="password" className="block text-sm font-medium text-gray-700">Contraseña</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-            required
-          />
+          <div className="relative mt-1">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="block w-full border border-gray-300 rounded-md shadow-sm p-2 pr-24"
+              minLength={8}
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-blue-600 hover:underline"
+              aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            >
+              {showPassword ? 'Ocultar' : 'Mostrar'}
+            </button>
+          </div>
         </div>
         <button
           type="submit"

@@ -33,8 +33,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const attemptRefresh = async () => {
       try {
-        // En modo mock, no hay refresh real, así que no hacemos nada
-        // Podríamos intentar leer un token guardado, pero por ahora lo omitimos
+        const refresh = await authService.refresh();
+        setGlobalToken(refresh.access_token);
+
+        setState({ token: refresh.access_token, user: null, isAuthenticated: true });
+
+        try {
+          const me = await authService.getMe();
+          const user = me?.user;
+          if (user) {
+            setState({
+              token: refresh.access_token,
+              user: { id: user.sub, name: user.name, email: user.email },
+              isAuthenticated: true,
+            });
+          }
+        } catch {
+          // Si /auth/me falla, igual dejamos la sesión rehidratada con token.
+        }
       } catch {
         // No hay sesión activa
       }

@@ -6,6 +6,7 @@ import './Login.css';
 const Login = () => {
   const [name, setName] = useState(''); // Cambiado de email a name
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -13,10 +14,12 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      setError('');
       await login({ name, password }); // Envía name, no email
       navigate('/dashboard');
-    } catch (err) {
-      setError('Credenciales incorrectas');
+    } catch (err: any) {
+      const apiMessage = err?.response?.data?.message;
+      setError(apiMessage || 'Credenciales incorrectas');
     }
   };
 
@@ -39,14 +42,24 @@ const Login = () => {
         </div>
         <div className="form-group">
           <label htmlFor="password">Contraseña</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="form-input"
-            required
-          />
+          <div className="password-field">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="form-input form-input--with-toggle"
+              required
+            />
+            <button
+              type="button"
+              className="toggle-password"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+            >
+              {showPassword ? 'Ocultar' : 'Mostrar'}
+            </button>
+          </div>
         </div>
         <button type="submit" className="form-button">Iniciar Sesión</button>
       </form>
