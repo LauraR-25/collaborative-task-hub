@@ -176,7 +176,19 @@ export const taskService = {
       const idx = tasks.findIndex((t) => t.id === id && t.creator_id === userId);
       if (idx === -1) throw new Error('Tarea no encontrada');
 
-      const payload = normalizeTaskPayloadForApi(updates);
+      // IMPORTANTE: el endpoint general (PUT /tasks/:id) NO debe cambiar status.
+      // Lo dejamos solo para title, description y due_date.
+      const safeUpdates = {
+        ...(typeof updates.title === 'string' ? { title: updates.title } : {}),
+        ...(typeof updates.description === 'string' || updates.description === undefined
+          ? { description: updates.description }
+          : {}),
+        ...(typeof updates.due_date === 'string' || updates.due_date === undefined
+          ? { due_date: updates.due_date }
+          : {}),
+      };
+
+      const payload = normalizeTaskPayloadForApi(safeUpdates);
       const prev = tasks[idx];
       const next: MockTask = {
         ...prev,
@@ -198,7 +210,19 @@ export const taskService = {
 
       return normalizeTaskFromApi(next);
     }
-    const payload = normalizeTaskPayloadForApi(updates);
+
+    // IMPORTANTE: el endpoint general (PUT /tasks/:id) NO debe cambiar status.
+    // Lo dejamos solo para title, description y due_date.
+    const safeUpdates = {
+      ...(typeof updates.title === 'string' ? { title: updates.title } : {}),
+      ...(typeof updates.description === 'string' || updates.description === undefined
+        ? { description: updates.description }
+        : {}),
+      ...(typeof updates.due_date === 'string' || updates.due_date === undefined
+        ? { due_date: updates.due_date }
+        : {}),
+    };
+    const payload = normalizeTaskPayloadForApi(safeUpdates);
     const { data } = await api.put(`/tasks/${id}`, payload);
     return normalizeTaskFromApi(data.task);
   },

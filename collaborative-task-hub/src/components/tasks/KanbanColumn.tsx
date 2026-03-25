@@ -16,10 +16,10 @@ const KanbanColumn = ({ id, title, tasks, onUpdate, onDelete }: KanbanColumnProp
   const { setNodeRef } = useDroppable({ id });
 
   return (
-    <Card>
+    <Card className="targaryen-card kanban-column">
       <CardHeader>
         <CardTitle className="text-base font-semibold flex items-center justify-between">
-          <span className="text-primary">{title}</span>
+          <span className="text-primary column-title">{title}</span>
           <span className="text-sm text-muted-foreground">({tasks.length})</span>
         </CardTitle>
       </CardHeader>

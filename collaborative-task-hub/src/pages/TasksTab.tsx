@@ -6,6 +6,7 @@ import { projectService, type Project } from '@/services/projectService';
 import TaskDetailDialog from '@/components/tasks/TaskDetailDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useAuth } from '@/context/AuthContext';
 
 const statusOrder: Array<Exclude<Task['status'], 'bloqueada'>> = ['pendiente', 'en_progreso', 'completada'];
 
@@ -25,6 +26,7 @@ const normalizeStatusForBoard = (status: Task['status']): Exclude<Task['status']
   status === 'bloqueada' ? 'pendiente' : status;
 
 const TasksTab = () => {
+  const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,15 +46,17 @@ const TasksTab = () => {
     setError(null);
     try {
       const [tasksData, projectsData] = await Promise.all([taskService.getAll(), projectService.getAll()]);
-      setTasks(tasksData);
-      setProjects(projectsData);
+      const safeTasks = user?.id ? tasksData.filter((t) => !t.creator_id || t.creator_id === user.id) : tasksData;
+      const safeProjects = user?.id ? projectsData.filter((p) => !p.owner_id || p.owner_id === user.id) : projectsData;
+      setTasks(safeTasks);
+      setProjects(safeProjects);
     } catch (e: any) {
       const apiMessage = e?.response?.data?.message;
       setError(apiMessage || 'Error al cargar tareas');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   const handleDeleteTask = useCallback(async (id: string) => {
     setError(null);
@@ -102,7 +106,8 @@ const TasksTab = () => {
 
   return (
     <TooltipProvider>
-      <div className="container mx-auto px-6 pt-20 pb-6">
+      <div className="container mx-auto px-6 pt-20 pb-6 targaryen-shell">
+        <img src="/houses/targaryen.png" alt="Casa Targaryen" className="house-logo" />
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <h1 className="text-3xl font-bold">Tareas</h1>
           <div className="flex flex-wrap items-center gap-3">
@@ -148,7 +153,7 @@ const TasksTab = () => {
             {statusOrder.map((status) => {
               const list = tasksByStatus.get(status) || [];
               return (
-                <Card key={status}>
+                <Card key={status} className="targaryen-card">
                   <CardHeader>
                     <CardTitle className="text-base font-semibold flex items-center justify-between">
                       <span>

@@ -4,7 +4,7 @@ import { MOCK_KEYS as CORE_KEYS, USE_MOCK, mockRequireUserId, mockSeedIfNeeded }
 
 export interface Profile {
   id: string;
-  name: string;
+  user: string;
   email: string;
   bio?: string;
   phone?: string;
@@ -82,7 +82,16 @@ export const profileService = {
   getProfile: async (): Promise<Profile> => {
     if (!USE_MOCK) {
       const { data } = await api.get('/users/me');
-      return data.user;
+      const u = data.user;
+      return {
+        id: u.id,
+        user: u.user ?? u.name,
+        email: u.email,
+        phone: u.phone,
+        bio: u.bio ?? '',
+        created_at: u.created_at,
+        updated_at: u.updated_at,
+      };
     }
 
     const user = mockGetCurrentUser();
@@ -90,7 +99,7 @@ export const profileService = {
     const updated_at = user.updated_at || created_at;
     return {
       id: user.id,
-      name: user.name || user.user || 'Demo',
+      user: user.user || user.name || 'demo',
       email: user.email,
       bio: user.bio,
       phone: user.phone,
@@ -99,10 +108,8 @@ export const profileService = {
     };
   },
 
-  updateProfile: async (updates: Partial<Pick<Profile, 'name' | 'email' | 'bio' | 'phone'>>): Promise<Profile> => {
-    const payload: Record<string, any> = {};
-    if (typeof updates.name === 'string') payload.name = updates.name;
-    if (typeof updates.email === 'string') payload.email = updates.email;
+  updateProfile: async (updates: Partial<Pick<Profile, 'bio' | 'phone'>>): Promise<Profile> => {
+    const payload: Record<string, unknown> = {};
     if (typeof updates.bio === 'string') payload.bio = updates.bio;
     if (typeof updates.phone === 'string') payload.phone = updates.phone;
     if (Object.keys(payload).length === 0) throw new Error('Debes modificar al menos un campo');
@@ -118,8 +125,6 @@ export const profileService = {
       u.id === current.id
         ? {
             ...u,
-            ...(updates.name !== undefined ? { name: updates.name } : {}),
-            ...(updates.email !== undefined ? { email: updates.email } : {}),
             ...(updates.bio !== undefined ? { bio: updates.bio } : {}),
             ...(updates.phone !== undefined ? { phone: updates.phone } : {}),
             updated_at: nowIso(),
@@ -133,7 +138,7 @@ export const profileService = {
     const updated_at = updated.updated_at || created_at;
     return {
       id: updated.id,
-      name: updated.name || updated.user || 'Demo',
+      user: updated.user || updated.name || 'demo',
       email: updated.email,
       bio: updated.bio,
       phone: updated.phone,

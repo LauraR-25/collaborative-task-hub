@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSortable } from '@dnd-kit/sortable';
 import type { Task } from '@/services/taskService';
 import TaskDetailDialog from './TaskDetailDialog';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +14,7 @@ interface TaskItemProps {
 const TaskItem = ({ task, onUpdate, onDelete }: TaskItemProps) => {
   const [open, setOpen] = useState(false);
   const [openInEdit, setOpenInEdit] = useState(false);
+  const { attributes, listeners, setNodeRef, isDragging } = useSortable({ id: task.id });
 
   const effectiveStatus: Task['status'] = task.status === 'bloqueada' ? 'pendiente' : task.status;
   const isDone = effectiveStatus === 'completada';
@@ -47,7 +49,14 @@ const TaskItem = ({ task, onUpdate, onDelete }: TaskItemProps) => {
 
   return (
     <>
-      <div className="rounded-md border border-border px-4 py-3 transition-colors bg-surface hover:bg-surface-active">
+      <div
+        ref={setNodeRef}
+        {...attributes}
+        {...listeners}
+        className={`kanban-task-card rounded-md border border-border px-4 py-3 transition-colors bg-surface hover:bg-surface-active ${
+          isDragging ? 'is-dragging' : ''
+        }`}
+      >
         <div className="flex items-start gap-3">
           {/* Indicador de estado (no clickeable) */}
           <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden="true">

@@ -6,6 +6,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  phone?: string;
 }
 
 interface AuthState {
@@ -48,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (user) {
             setState({
               token: refresh.access_token,
-              user: { id: user.sub, name: user.name ?? user.user, email: user.email },
+              user: { id: user.sub, name: user.name ?? user.user, email: user.email, phone: user.phone },
               isAuthenticated: true,
               isLoading: true,
             });
@@ -67,11 +68,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     attemptRefresh();
   }, []);
 
-  const setAuth = useCallback((response: { access_token: string; user_id: string; email: string; user: string }) => {
+  const setAuth = useCallback((response: { access_token: string; user_id: string; email: string; user: string; phone?: string }) => {
     setGlobalToken(response.access_token);
     setState({
       token: response.access_token,
-      user: { id: response.user_id, name: response.user, email: response.email },
+      user: { id: response.user_id, name: response.user, email: response.email, phone: response.phone },
       isAuthenticated: true,
       isLoading: false,
     });

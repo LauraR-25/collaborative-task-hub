@@ -13,8 +13,8 @@ const Navbar = () => {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex h-14 items-center justify-between border-b border-border bg-surface px-6">
-      <span className="font-heading text-base font-semibold text-foreground tracking-tight">
-        TaskFlow
+      <span className="font-heading text-base font-semibold text-foreground tracking-[0.18em]">
+        TASKFLOW
       </span>
       {user && (
         <div className="flex items-center gap-6">

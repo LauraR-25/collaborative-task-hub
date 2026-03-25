@@ -40,7 +40,7 @@ const Dashboard = () => {
 
   const handleUpdate = async (id: string, updates: Partial<Omit<Task, 'id' | 'created_at' | 'updated_at'>>) => {
     try {
-      const updated = await taskService.update(id, updates);
+      const updated = updates.status ? await taskService.updateStatus(id, updates.status) : await taskService.update(id, updates);
       setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
     } catch {
       setError('Error al actualizar la tarea.');

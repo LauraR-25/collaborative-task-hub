@@ -160,7 +160,13 @@ const TaskDetailDialog = ({
     setSaving(true);
     setError(null);
     try {
-      const updated = await taskService.update(task.id, updates);
+      let updated = task;
+      if (updates.status && updates.status !== task.status) {
+        updated = await taskService.updateStatus(task.id, updates.status);
+      }
+      const updatedGeneral = await taskService.update(task.id, updates);
+      updated = { ...updated, ...updatedGeneral };
+
       setTask(updated);
       resetDraftFromTask(updated);
       setEditing(false);

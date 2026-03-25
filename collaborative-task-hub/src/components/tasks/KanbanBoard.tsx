@@ -8,11 +8,13 @@ import TaskForm from './TaskForm';
 import KanbanColumn from './KanbanColumn';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { useAuth } from '@/context/AuthContext';
 
 const normalizeStatusForBoard = (status: Task['status']): Exclude<Task['status'], 'bloqueada'> =>
   status === 'bloqueada' ? 'pendiente' : status;
 
 const KanbanBoard = () => {
+  const { user } = useAuth();
   const { projectId } = useParams<{ projectId: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -26,15 +28,17 @@ const KanbanBoard = () => {
         projectService.getById(projectId),
         taskService.getAll(projectId),
       ]);
-      setProject(projectData);
-      setTasks(tasksData);
+      const safeProject = user?.id && projectData.owner_id && projectData.owner_id !== user.id ? null : projectData;
+      const safeTasks = user?.id ? tasksData.filter((t) => !t.creator_id || t.creator_id === user.id) : tasksData;
+      setProject(safeProject);
+      setTasks(safeTasks);
       setError('');
     } catch {
       setError('Error al cargar el proyecto.');
     } finally {
       setLoading(false);
     }
-  }, [projectId]);
+  }, [projectId, user?.id]);
 
   useEffect(() => {
     fetchData();
@@ -73,7 +77,7 @@ const KanbanBoard = () => {
 
   const handleUpdateTask = async (id: string, updates: Partial<Omit<Task, 'id' | 'created_at' | 'updated_at'>>) => {
     try {
-      const updated = await taskService.update(id, updates);
+      const updated = updates.status ? await taskService.updateStatus(id, updates.status) : await taskService.update(id, updates);
       setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
     } catch {
       setError('Error al actualizar la tarea.');
@@ -115,8 +119,9 @@ const KanbanBoard = () => {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-background text-foreground px-6 pt-20 pb-6">
+      <div className="min-h-screen bg-background text-foreground px-6 pt-20 pb-6 targaryen-shell">
         <div className="max-w-7xl mx-auto">
+        <img src="/houses/targaryen.png" alt="Casa Targaryen" className="house-logo" />
         <header className="mb-8">
           <div className="grid grid-cols-3 items-center gap-4">
             <div>

@@ -5,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { profileService, type DeviceSession, type Profile as ProfileModel } from '@/services/profileService';
+import { authService } from '@/services/authService';
 import { useAuth } from '@/context/AuthContext';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { mapConflictMessage, mapProfilePhoneConflictMessageEs } from '@/lib/apiErrorMessages';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -19,27 +21,26 @@ const Profile = () => {
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<{ name?: string; email?: string; bio?: string; phone?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{ bio?: string; phone?: string }>({});
 
   const [editing, setEditing] = useState(false);
-  const [draftName, setDraftName] = useState(user?.name || '');
-  const [draftEmail, setDraftEmail] = useState(user?.email || '');
   const [draftBio, setDraftBio] = useState('');
   const [draftPhone, setDraftPhone] = useState('');
 
   const [showPasswordForm, setShowPasswordForm] = useState(false);
-  const [pwCurrent, setPwCurrent] = useState('');
+  const [pwToken, setPwToken] = useState('');
   const [pwNext, setPwNext] = useState('');
   const [pwConfirm, setPwConfirm] = useState('');
   const [pwVisible, setPwVisible] = useState(false);
   const [pwSaving, setPwSaving] = useState(false);
-  const [passwordSupported, setPasswordSupported] = useState<boolean>(isMock);
+  const [passwordCooldownUntil, setPasswordCooldownUntil] = useState(0);
 
   const [sessions, setSessions] = useState<DeviceSession[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(false);
 
   const [sessionsSupported, setSessionsSupported] = useState<boolean | null>(isMock ? null : false);
   const [deleteSupported, setDeleteSupported] = useState<boolean>(isMock);
+  const cooldownSeconds = Math.max(0, Math.ceil((passwordCooldownUntil - Date.now()) / 1000));
 
   useEffect(() => {
     const load = async () => {
@@ -50,11 +51,9 @@ const Profile = () => {
       try {
         const p = await profileService.getProfile();
         setProfile(p);
-        setDraftName(p.name);
-        setDraftEmail(p.email);
         setDraftBio(p.bio || '');
         setDraftPhone(p.phone || '');
-        updateUser({ name: p.name, email: p.email });
+        updateUser({ name: p.user, email: p.email, phone: p.phone });
 
         try {
           const sess = await profileService.listSessions();
@@ -101,32 +100,34 @@ const Profile = () => {
   };
 
   const validateProfile = () => {
-    const nextErrors: { name?: string; email?: string; bio?: string; phone?: string } = {};
+    const nextErrors: { bio?: string; phone?: string } = {};
 
-    const name = draftName.trim();
-    const email = draftEmail.trim();
+    const cleanedPhone = draftPhone.trim().replace(/[\s().-]/g, '');
 
-    if (!name) nextErrors.name = 'El nombre es requerido';
-    else if (name.length < 1 || name.length > 250) nextErrors.name = 'El nombre debe tener entre 1 y 250 caracteres';
-
-    if (!email) nextErrors.email = 'El email es requerido';
-    else if (email.length > 250) nextErrors.email = 'El email no puede superar 250 caracteres';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) nextErrors.email = 'Email inválido';
+    if (draftBio.length > 1000) nextErrors.bio = 'La biografía no puede superar 1000 caracteres';
+    if (cleanedPhone && !/^\+?[0-9]{7,20}$/.test(cleanedPhone)) {
+      nextErrors.phone = 'El teléfono debe tener un formato válido (ej: +584141112233)';
+    }
 
     setFieldErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
   };
 
-  const mapHttpError = (e: any) => {
-    const status: number | undefined = e?.response?.status;
-    if (status === 400) return e?.response?.data?.message || 'Revisa los campos e intenta de nuevo';
+  const mapHttpError = (e: unknown) => {
+    const maybeErr = e as { response?: { status?: number; data?: { message?: string } }; message?: string };
+    const status: number | undefined = maybeErr?.response?.status;
+    if (status === 400) return maybeErr?.response?.data?.message || 'Revisa los campos e intenta de nuevo';
     if (status === 401) return 'Sesión expirada. Vuelve a iniciar sesión.';
     if (status === 403) return 'No tienes permisos para realizar esta acción.';
     if (status === 404) return 'Recurso no encontrado.';
-    if (status === 409) return 'El correo ya está registrado.';
-    if (status === 429) return 'Demasiadas solicitudes. Intenta más tarde.';
+    if (status === 409) {
+      const raw = mapConflictMessage(maybeErr?.response?.data?.message, 'Phone already registered');
+      return mapProfilePhoneConflictMessageEs(raw);
+    }
+    if (status === 429)
+      return maybeErr?.response?.data?.message || 'Demasiadas solicitudes de autenticacion. Intenta de nuevo en 1 minuto.';
     if (status && status >= 500) return 'Error inesperado. Intenta más tarde.';
-    return e?.response?.data?.message || e?.message || 'Ocurrió un error.';
+    return maybeErr?.response?.data?.message || maybeErr?.message || 'Ocurrió un error.';
   };
 
   const handleSaveProfile = async () => {
@@ -136,30 +137,39 @@ const Profile = () => {
 
     if (!validateProfile()) return;
 
+    const cleanedPhone = draftPhone.trim().replace(/[\s().-]/g, '');
+    const nextUpdates: { phone?: string; bio?: string } = {};
+    if (cleanedPhone && cleanedPhone !== (profile?.phone || '')) {
+      nextUpdates.phone = cleanedPhone;
+    }
+    if (draftBio !== (profile?.bio || '')) {
+      nextUpdates.bio = draftBio;
+    }
+
+    if (Object.keys(nextUpdates).length === 0) {
+      setSuccess('No hay cambios para guardar');
+      setEditing(false);
+      return;
+    }
+
     try {
-      const updated = await profileService.updateProfile({
-        name: draftName.trim(),
-        email: draftEmail.trim(),
-        bio: draftBio.trim(),
-        phone: draftPhone.trim(),
-      });
+      const updated = await profileService.updateProfile(nextUpdates);
       setProfile(updated);
-      updateUser({ name: updated.name, email: updated.email });
+      updateUser({ name: updated.user, email: updated.email, phone: updated.phone });
       setEditing(false);
       setSuccess('Perfil actualizado');
-    } catch (e: any) {
-      const status = e?.response?.status;
-      const apiErrors = e?.response?.data?.errors;
+    } catch (e: unknown) {
+      const maybeErr = e as { response?: { status?: number; data?: { errors?: Record<string, string> } } };
+      const status = maybeErr?.response?.status;
+      const apiErrors = maybeErr?.response?.data?.errors;
       if (status === 400 && apiErrors && typeof apiErrors === 'object') {
         setFieldErrors({
-          ...(apiErrors.name ? { name: String(apiErrors.name) } : {}),
-          ...(apiErrors.email ? { email: String(apiErrors.email) } : {}),
           ...(apiErrors.bio ? { bio: String(apiErrors.bio) } : {}),
           ...(apiErrors.phone ? { phone: String(apiErrors.phone) } : {}),
         });
       } else {
         const msg = mapHttpError(e);
-        if (status === 409) setFieldErrors({ email: msg });
+        if (status === 409) setFieldErrors({ phone: msg });
         else setError(msg);
       }
 
@@ -170,17 +180,67 @@ const Profile = () => {
     }
   };
 
+  const handleOpenPasswordReset = async () => {
+    if (showPasswordForm) {
+      setShowPasswordForm(false);
+      setPwToken('');
+      setPwNext('');
+      setPwConfirm('');
+      setPwVisible(false);
+      setError(null);
+      setSuccess(null);
+      return;
+    }
+
+    setError(null);
+    setSuccess(null);
+    if (cooldownSeconds > 0) {
+      setError(`Debes esperar ${cooldownSeconds}s para volver a intentar`);
+      return;
+    }
+
+    const currentUsername = (profile?.user || user?.name || '').trim();
+    if (!currentUsername) {
+      setError('No se pudo determinar el usuario actual para iniciar recuperación');
+      return;
+    }
+
+    setPwSaving(true);
+    try {
+      const response = await authService.forgotPassword({ user: currentUsername });
+      if (!response.token) {
+        setError('No se pudo iniciar la recuperación de contraseña. Intenta nuevamente.');
+        return;
+      }
+      setPwToken(response.token);
+      setShowPasswordForm(true);
+      setSuccess('Verificación iniciada. Ahora define tu nueva contraseña.');
+    } catch (e: any) {
+      if (e?.response?.status === 429) {
+        setPasswordCooldownUntil(Date.now() + 60_000);
+      }
+      setError(mapHttpError(e));
+    } finally {
+      setPwSaving(false);
+    }
+  };
+
   const handleChangePassword = async () => {
     setError(null);
     setSuccess(null);
 
-    if (passwordSupported === false) {
-      setError('Próximamente');
+    if (cooldownSeconds > 0) {
+      setError(`Debes esperar ${cooldownSeconds}s para volver a intentar`);
       return;
     }
 
-    if (!pwCurrent || !pwNext || !pwConfirm) {
-      setError('Completa los 3 campos de contraseña');
+    if (!pwToken.trim()) {
+      setError('No hay una verificación activa. Presiona de nuevo Cambiar Contraseña.');
+      return;
+    }
+
+    if (!pwNext || !pwConfirm) {
+      setError('Completa la nueva contraseña y su confirmación');
       return;
     }
 
@@ -196,19 +256,19 @@ const Profile = () => {
 
     setPwSaving(true);
     try {
-      await profileService.changePassword({ current_password: pwCurrent, new_password: pwNext });
-      setPasswordSupported(true);
-      setPwCurrent('');
+      await authService.resetPassword({ token: pwToken.trim(), password: pwNext });
+      setShowPasswordForm(false);
+      setPwToken('');
       setPwNext('');
       setPwConfirm('');
-      setSuccess('Contraseña cambiada');
+      setSuccess('Password updated. Inicia sesión nuevamente por seguridad.');
+      await logout();
+      navigate('/login');
     } catch (e: any) {
-      if (e?.code === 'FEATURE_UNAVAILABLE') {
-        setPasswordSupported(false);
-        setError('Próximamente');
-      } else {
-        setError(mapHttpError(e));
+      if (e?.response?.status === 429) {
+        setPasswordCooldownUntil(Date.now() + 60_000);
       }
+      setError(mapHttpError(e));
     } finally {
       setPwSaving(false);
     }
@@ -293,7 +353,8 @@ const Profile = () => {
 
   return (
     <TooltipProvider>
-      <div className="container mx-auto px-6 pt-20 pb-6 max-w-3xl">
+      <div className="container mx-auto px-6 pt-20 pb-6 max-w-3xl stark-profile-shell">
+        <img src="/houses/stark.png" alt="Casa Stark" className="house-logo" />
         <h1 className="text-3xl font-bold mb-6">Perfil de Usuario</h1>
 
         {(error || success) && (
@@ -309,7 +370,7 @@ const Profile = () => {
         )}
 
         <div className="space-y-6">
-          <Card>
+          <Card className="stark-card">
             <CardHeader>
               <CardTitle>Mi Perfil</CardTitle>
             </CardHeader>
@@ -317,7 +378,7 @@ const Profile = () => {
               {!editing ? (
                 <div className="space-y-1 text-sm">
                   <div>
-                    <span className="font-medium">Nombre:</span> {profile?.name || user?.name || '—'}
+                    <span className="font-medium">Usuario:</span> {profile?.user || user?.name || '—'}
                   </div>
                   <div>
                     <span className="font-medium">Email:</span> {profile?.email || user?.email || '—'}
@@ -335,14 +396,12 @@ const Profile = () => {
               ) : (
                 <div className="space-y-3">
                   <div className="space-y-2">
-                    <div className="text-sm font-medium">Nombre</div>
-                    <Input value={draftName} onChange={(e) => setDraftName(e.target.value)} />
-                    {fieldErrors.name && <div className="text-sm text-destructive">{fieldErrors.name}</div>}
+                    <div className="text-sm font-medium">Usuario (solo lectura)</div>
+                    <Input value={profile?.user || user?.name || ''} readOnly disabled />
                   </div>
                   <div className="space-y-2">
-                    <div className="text-sm font-medium">Email</div>
-                    <Input value={draftEmail} onChange={(e) => setDraftEmail(e.target.value)} />
-                    {fieldErrors.email && <div className="text-sm text-destructive">{fieldErrors.email}</div>}
+                    <div className="text-sm font-medium">Email (solo lectura)</div>
+                    <Input value={profile?.email || user?.email || ''} readOnly disabled />
                   </div>
                   <div className="space-y-2">
                     <div className="text-sm font-medium">Biografía</div>
@@ -370,25 +429,13 @@ const Profile = () => {
                   [Editar Perfil]
                 </Button>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span tabIndex={0} className="inline-flex">
-                      <Button
-                        type="button"
-                        variant="link"
-                        onClick={() => {
-                          setShowPasswordForm((v) => !v);
-                          setError(null);
-                          setSuccess(null);
-                        }}
-                        disabled={!passwordSupported}
-                      >
-                        [Cambiar Contraseña]
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  {!passwordSupported && <TooltipContent>Próximamente</TooltipContent>}
-                </Tooltip>
+                <Button
+                  type="button"
+                  variant="link"
+                  onClick={handleOpenPasswordReset}
+                >
+                  [Cambiar Contraseña]
+                </Button>
 
                 <Button
                   type="button"
@@ -411,8 +458,6 @@ const Profile = () => {
                     type="button"
                     variant="outline"
                     onClick={() => {
-                      setDraftName(profile?.name || user?.name || '');
-                      setDraftEmail(profile?.email || user?.email || '');
                       setDraftBio(profile?.bio || '');
                       setDraftPhone(profile?.phone || '');
                       setEditing(false);
@@ -433,15 +478,11 @@ const Profile = () => {
                       {pwVisible ? 'Ocultar' : 'Mostrar'} contraseñas
                     </Button>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div className="space-y-2">
-                      <div className="text-sm font-medium">Actual</div>
-                      <Input
-                        type={pwVisible ? 'text' : 'password'}
-                        value={pwCurrent}
-                        onChange={(e) => setPwCurrent(e.target.value)}
-                      />
-                    </div>
+                  <div className="text-sm text-muted-foreground">
+                    Usuario verificado: <span className="font-medium">{profile?.user || user?.name || '—'}</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <div className="text-sm font-medium">Nueva</div>
                       <Input type={pwVisible ? 'text' : 'password'} value={pwNext} onChange={(e) => setPwNext(e.target.value)} />
@@ -455,16 +496,17 @@ const Profile = () => {
                       />
                     </div>
                   </div>
+
                   <div className="flex flex-wrap items-center gap-2">
-                    <Button type="button" onClick={handleChangePassword} disabled={pwSaving}>
-                      {pwSaving ? 'Cambiando…' : 'Cambiar contraseña'}
+                    <Button type="button" onClick={handleChangePassword} disabled={pwSaving || cooldownSeconds > 0}>
+                      {pwSaving ? 'Actualizando...' : cooldownSeconds > 0 ? `Reintentar en ${cooldownSeconds}s` : 'Cambiar contraseña'}
                     </Button>
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => {
                         setShowPasswordForm(false);
-                        setPwCurrent('');
+                        setPwToken('');
                         setPwNext('');
                         setPwConfirm('');
                         setPwVisible(false);
@@ -481,7 +523,7 @@ const Profile = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="stark-card">
             <CardHeader>
               <CardTitle>Sesiones activas:</CardTitle>
             </CardHeader>

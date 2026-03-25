@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        heading: ['var(--font-heading)', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        heading: ['var(--font-heading)', 'Cinzel', 'Times New Roman', 'serif'],
         body: ['var(--font-body)', 'Source Serif 4', 'ui-serif', 'Georgia', 'serif'],
       },
       colors: {

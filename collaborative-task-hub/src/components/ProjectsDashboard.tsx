@@ -3,9 +3,11 @@ import { projectService, type Project } from '@/services/projectService';
 import ProjectList from './ProjectsList';
 import { Input } from '@/components/ui/input';
 import ProjectForm from './ProjectForm';
+import { useAuth } from '@/context/AuthContext';
 
 
 const ProjectsDashboard = () => {
+  const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -14,14 +16,15 @@ const ProjectsDashboard = () => {
   const fetchProjects = useCallback(async () => {
     try {
       const data = await projectService.getAll();
-      setProjects(data);
+      const safeProjects = user?.id ? data.filter((p) => !p.owner_id || p.owner_id === user.id) : data;
+      setProjects(safeProjects);
       setError('');
     } catch {
       setError('Error al cargar proyectos');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     fetchProjects();
@@ -42,7 +45,8 @@ const ProjectsDashboard = () => {
   );
 
   return (
-    <div className="container mx-auto px-6 pt-20 pb-6">
+    <div className="container mx-auto px-6 pt-20 pb-6 targaryen-shell">
+      <img src="/houses/targaryen.png" alt="Casa Targaryen" className="house-logo" />
       <h1 className="text-3xl font-bold mb-6">Mis Proyectos</h1>
       
       <div className="flex justify-between items-center mb-6">

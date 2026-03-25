@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { mapRegisterConflictMessageEs } from '@/lib/apiErrorMessages';
 
 const Register = () => {
   const [user, setUser] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -19,13 +21,21 @@ const Register = () => {
         setError('La contraseña debe tener al menos 8 caracteres');
         return;
       }
-      await register({ user, email, password });
+
+      const normalizedPhone = phone.replace(/[\s().-]/g, '');
+      if (!/^\+?[0-9]{7,20}$/.test(normalizedPhone)) {
+        setError('El teléfono debe tener un formato válido (ej: +584141112233)');
+        return;
+      }
+
+      await register({ user, email, password, phone: normalizedPhone });
       navigate('/dashboard');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Register error:', err);
-      const apiMessage = err?.response?.data?.message;
-      const status = err?.response?.status;
-      const isNetwork = !err?.response && (err?.code === 'ERR_NETWORK' || err?.message === 'Network Error');
+      const maybeErr = err as { response?: { data?: { message?: string }; status?: number }; code?: string; message?: string };
+      const apiMessage = maybeErr?.response?.data?.message;
+      const status = maybeErr?.response?.status;
+      const isNetwork = !maybeErr?.response && (maybeErr?.code === 'ERR_NETWORK' || maybeErr?.message === 'Network Error');
 
       if (isNetwork) {
         setError('No se pudo conectar al servidor. Si quieres probar sin backend, usa `pnpm run dev:mock`.' );
@@ -33,18 +43,20 @@ const Register = () => {
       }
 
       if (status === 409) {
-        setError(apiMessage || 'El correo ya está registrado');
+        setError(mapRegisterConflictMessageEs(apiMessage));
         return;
       }
 
-      setError(apiMessage || err?.message || 'Error al registrarse');
+      setError(apiMessage || maybeErr?.message || 'Error al registrarse');
     }
   };
 
   return (
     <div className="pt-14">
       <div className="min-h-[calc(100vh-56px)] flex items-center justify-center px-6">
-        <div className="max-w-md w-full mx-auto p-6 bg-surface rounded shadow-[var(--shadow-slab-lg)] border border-border">
+        <div className="lannister-panel max-w-md w-full mx-auto p-6 bg-surface rounded shadow-[var(--shadow-slab-lg)] border border-border">
+          <img src="/houses/lannister.png" alt="Casa Lannister" className="house-logo" />
+          <div className="house-wordmark">TASKFLOW</div>
           <h1 className="text-2xl font-bold text-center mb-4 text-foreground">Crear cuenta</h1>
           <p className="text-center text-muted-foreground mb-6">Regístrate para comenzar a gestionar tus tareas.</p>
           {error && (
@@ -76,6 +88,20 @@ const Register = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="mt-1 block w-full border border-input rounded-md bg-background text-foreground p-2"
+                required
+              />
+            </div>
+            <div className="mb-6">
+              <label htmlFor="phone" className="block text-sm font-medium text-foreground">
+                Teléfono
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="mt-1 block w-full border border-input rounded-md bg-background text-foreground p-2"
+                placeholder="+584141112233"
                 required
               />
             </div>
