@@ -6,6 +6,7 @@ import Register from '@/components/auth/Register';
 import Navbar from '@/components/layout/Navbar';
 import ProjectsDashboard from '@/components/ProjectsDashboard'; // nuevo componente
 import TasksTab from '@/pages/TasksTab';
+import Profile from '@/pages/Profile';
 import KanbanBoard from '@/components/tasks/KanbanBoard';
 import NotFound from './pages/NotFound';
 
@@ -30,6 +31,14 @@ function App() {
             element={
               <PrivateRoute>
                 <TasksTab />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <Profile />
               </PrivateRoute>
             }
           />

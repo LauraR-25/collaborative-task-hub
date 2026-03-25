@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Task } from '@/services/taskService';
 import TaskDetailDialog from './TaskDetailDialog';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface TaskItemProps {
   task: Task;
@@ -13,18 +14,17 @@ const TaskItem = ({ task, onUpdate, onDelete }: TaskItemProps) => {
   const [open, setOpen] = useState(false);
   const [openInEdit, setOpenInEdit] = useState(false);
 
-  const isDone = task.status === 'completada';
+  const effectiveStatus: Task['status'] = task.status === 'bloqueada' ? 'pendiente' : task.status;
+  const isDone = effectiveStatus === 'completada';
 
   const statusIcon = (() => {
-    switch (task.status) {
+    switch (effectiveStatus) {
       case 'pendiente':
         return '🟡';
       case 'en_progreso':
         return '🔵';
       case 'completada':
         return '✅';
-      case 'bloqueada':
-        return '⛔';
       default:
         return '•';
     }
@@ -56,55 +56,59 @@ const TaskItem = ({ task, onUpdate, onDelete }: TaskItemProps) => {
 
           {/* Contenido */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setOpenInEdit(false);
-                  setOpen(true);
-                }}
-                className="min-w-0 flex-1 text-left"
-                aria-label={`Abrir tarea: ${task.title}`}
-              >
-                <div
-                  className={`truncate font-heading text-sm font-medium ${
-                    isDone ? 'line-through text-muted-foreground' : 'text-foreground'
-                  }`}
-                >
-                  {task.title}
-                </div>
-                {task.description && (
-                  <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">{task.description}</div>
-                )}
-                <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                  <span>Prioridad:</span>
-                  <Badge variant="outline" className={priorityMeta.className}>
-                    {priorityMeta.label}
-                  </Badge>
-                </div>
-              </button>
-
-              <div className="flex shrink-0 items-center gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
                 <button
                   type="button"
                   onClick={() => {
-                    setOpenInEdit(true);
+                    setOpenInEdit(false);
                     setOpen(true);
                   }}
-                  className="px-3 py-1.5 font-heading text-xs font-medium text-muted-foreground cursor-pointer"
-                  aria-label={`Editar tarea: ${task.title}`}
+                  className="min-w-0 w-full text-left"
+                  aria-label={`Abrir tarea: ${task.title}`}
                 >
-                  Editar
+                  <div
+                    className={`truncate font-heading text-sm font-medium ${
+                      isDone ? 'line-through text-muted-foreground' : 'text-foreground'
+                    }`}
+                  >
+                    {task.title}
+                  </div>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => onDelete(task.id)}
-                  className="px-3 py-1.5 font-heading text-xs font-medium text-destructive cursor-pointer"
-                  aria-label={`Eliminar tarea: ${task.title}`}
-                >
-                  Eliminar
-                </button>
-              </div>
+              </TooltipTrigger>
+              <TooltipContent>{task.title}</TooltipContent>
+            </Tooltip>
+
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setOpenInEdit(true);
+                  setOpen(true);
+                }}
+                className="px-3 py-1.5 font-heading text-xs font-medium text-muted-foreground cursor-pointer"
+                aria-label={`Editar tarea: ${task.title}`}
+              >
+                Editar
+              </button>
+              <button
+                type="button"
+                onClick={() => onDelete(task.id)}
+                className="px-3 py-1.5 font-heading text-xs font-medium text-destructive cursor-pointer"
+                aria-label={`Eliminar tarea: ${task.title}`}
+              >
+                Eliminar
+              </button>
+            </div>
+
+            {task.description && (
+              <div className="mt-2 line-clamp-2 text-xs text-muted-foreground">{task.description}</div>
+            )}
+            <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+              <span>Prioridad:</span>
+              <Badge variant="outline" className={priorityMeta.className}>
+                {priorityMeta.label}
+              </Badge>
             </div>
           </div>
         </div>

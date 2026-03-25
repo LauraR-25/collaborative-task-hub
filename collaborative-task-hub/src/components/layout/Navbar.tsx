@@ -34,9 +34,13 @@ const Navbar = () => {
               Tareas
             </NavLink>
           </div>
-          <span className="font-body text-sm text-muted-foreground">
+          <NavLink
+            to="/profile"
+            className="font-body text-sm text-muted-foreground"
+            activeClassName="text-foreground"
+          >
             {user.name}
-          </span>
+          </NavLink>
           <button
             onClick={handleLogout}
             className="font-heading text-sm font-medium text-muted-foreground cursor-pointer"

@@ -15,6 +15,7 @@ const ProjectsDashboard = () => {
     try {
       const data = await projectService.getAll();
       setProjects(data);
+      setError('');
     } catch {
       setError('Error al cargar proyectos');
     } finally {
@@ -30,13 +31,14 @@ const ProjectsDashboard = () => {
     try {
       const newProject = await projectService.create({ name, description });
       setProjects(prev => [newProject, ...prev]);
+      setError('');
     } catch {
       setError('Error al crear proyecto');
     }
   };
 
   const filteredProjects = projects.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase())
+    (p.name || '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (

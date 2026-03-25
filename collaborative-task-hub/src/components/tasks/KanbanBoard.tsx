@@ -7,6 +7,10 @@ import { taskService, type Task } from '@/services/taskService';
 import TaskForm from './TaskForm';
 import KanbanColumn from './KanbanColumn';
 import { Button } from '@/components/ui/button';
+import { TooltipProvider } from '@/components/ui/tooltip';
+
+const normalizeStatusForBoard = (status: Task['status']): Exclude<Task['status'], 'bloqueada'> =>
+  status === 'bloqueada' ? 'pendiente' : status;
 
 const KanbanBoard = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -99,7 +103,6 @@ const KanbanBoard = () => {
     { id: 'pendiente', title: 'PENDIENTES' },
     { id: 'en_progreso', title: 'EN PROGRESO' },
     { id: 'completada', title: 'COMPLETADAS' },
-    { id: 'bloqueada', title: 'BLOQUEADAS' },
   ];
 
   if (loading) {
@@ -111,8 +114,9 @@ const KanbanBoard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground px-6 pt-20 pb-6">
-      <div className="max-w-7xl mx-auto">
+    <TooltipProvider>
+      <div className="min-h-screen bg-background text-foreground px-6 pt-20 pb-6">
+        <div className="max-w-7xl mx-auto">
         <header className="mb-8">
           <div className="grid grid-cols-3 items-center gap-4">
             <div>
@@ -145,21 +149,22 @@ const KanbanBoard = () => {
         )}
 
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {columns.map((column) => (
               <KanbanColumn
                 key={column.id}
                 id={column.id}
                 title={column.title}
-                tasks={tasks.filter((task) => task.status === column.id)}
+                tasks={tasks.filter((task) => normalizeStatusForBoard(task.status) === column.id)}
                 onUpdate={handleUpdateTask}
                 onDelete={handleDeleteTask}
               />
             ))}
           </div>
         </DndContext>
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 };
 

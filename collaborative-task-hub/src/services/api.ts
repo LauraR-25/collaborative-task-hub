@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { getToken, setToken } from '@/lib/tokenStore';
 
-const API_BASE_URL = import.meta.env.VITE_API_GATEWAY_URL || 'https://api.tasksflowcenter.online';
+const DEFAULT_API_BASE_URL = import.meta.env.PROD ? 'https://api.tasksflowcenter.online' : 'http://localhost:3003';
+const API_BASE_URL = import.meta.env.VITE_API_GATEWAY_URL || DEFAULT_API_BASE_URL;
 
 const api = axios.create({
   baseURL: API_BASE_URL,

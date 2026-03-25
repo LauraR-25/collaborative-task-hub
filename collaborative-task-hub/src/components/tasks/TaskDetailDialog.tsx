@@ -28,8 +28,10 @@ const statusOptions: { value: TaskStatus; label: string }[] = [
   { value: 'pendiente', label: 'Pendiente' },
   { value: 'en_progreso', label: 'En progreso' },
   { value: 'completada', label: 'Completada' },
-  { value: 'bloqueada', label: 'Bloqueada' },
 ];
+
+const normalizeStatusForBoard = (status: TaskStatus): Exclude<TaskStatus, 'bloqueada'> =>
+  status === 'bloqueada' ? 'pendiente' : status;
 
 const priorityOptions: { value: TaskPriority; label: string }[] = [
   { value: 'baja', label: 'Baja' },
@@ -92,7 +94,7 @@ const TaskDetailDialog = ({
 
         setDraftTitle(data.title ?? '');
         setDraftDescription(data.description ?? '');
-        setDraftStatus(data.status ?? 'pendiente');
+        setDraftStatus(normalizeStatusForBoard(data.status ?? 'pendiente'));
         setDraftPriority(data.priority ?? '');
         setDraftDueDate(toDateInputValue(data.due_date));
 
@@ -139,7 +141,7 @@ const TaskDetailDialog = ({
   const resetDraftFromTask = (source: Task) => {
     setDraftTitle(source.title ?? '');
     setDraftDescription(source.description ?? '');
-    setDraftStatus(source.status ?? 'pendiente');
+    setDraftStatus(normalizeStatusForBoard(source.status ?? 'pendiente'));
     setDraftPriority(source.priority ?? '');
     setDraftDueDate(toDateInputValue(source.due_date));
   };

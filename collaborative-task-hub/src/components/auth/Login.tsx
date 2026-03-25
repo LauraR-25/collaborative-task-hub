@@ -19,58 +19,74 @@ const Login = () => {
       navigate('/dashboard');
     } catch (err: any) {
       const apiMessage = err?.response?.data?.message;
-      setError(apiMessage || 'Credenciales incorrectas');
+      const status = err?.response?.status;
+      const isNetwork = !err?.response && (err?.code === 'ERR_NETWORK' || err?.message === 'Network Error');
+
+      if (isNetwork) {
+        setError('No se pudo conectar al servidor. Si quieres probar sin backend, usa `pnpm run dev:mock`.' );
+        return;
+      }
+
+      if (status === 401) {
+        setError(apiMessage || 'Credenciales incorrectas');
+        return;
+      }
+
+      setError(apiMessage || err?.message || 'No se pudo iniciar sesión');
     }
   };
 
   return (
-    <div className="login-container">
-      <h1 className="login-title">Iniciar Sesión</h1>
-      <p className="login-subtitle">Ingresa tus datos para continuar.</p>
-      {error && <div className="login-error">{error}</div>}
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="user">Nombre de usuario</label>
-          <input
-            type="text"
-            id="user"
-            value={user}
-            onChange={(e) => setUser(e.target.value)}
-            className="form-input"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="password">Contraseña</label>
-          <div className="password-field">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="form-input form-input--with-toggle"
-              required
-            />
-            <button
-              type="button"
-              className="toggle-password"
-              onClick={() => setShowPassword((v) => !v)}
-              aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-            >
-              {showPassword ? 'Ocultar' : 'Mostrar'}
+    <div className="pt-14">
+      <div className="min-h-[calc(100vh-56px)] flex items-center justify-center px-6">
+        <div className="login-container">
+          <h1 className="login-title">Iniciar Sesión</h1>
+          <p className="login-subtitle">Ingresa tus datos para continuar.</p>
+          {error && <div className="login-error">{error}</div>}
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="user">Nombre de usuario</label>
+              <input
+                type="text"
+                id="user"
+                value={user}
+                onChange={(e) => setUser(e.target.value)}
+                className="form-input"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="password">Contraseña</label>
+              <div className="password-field">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="form-input form-input--with-toggle"
+                  required
+                />
+                <button
+                  type="button"
+                  className="toggle-password"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {showPassword ? 'Ocultar' : 'Mostrar'}
+                </button>
+              </div>
+            </div>
+            <button type="submit" className="form-button">
+              Iniciar Sesión
+            </button>
+          </form>
+          <div className="text-center mt-4">
+            <span className="text-sm text-gray-600">¿No tienes cuenta? </span>
+            <button onClick={() => navigate('/register')} className="text-sm text-blue-600 hover:underline">
+              Regístrate
             </button>
           </div>
         </div>
-        <button type="submit" className="form-button">Iniciar Sesión</button>
-      </form>
-      <div className="text-center mt-4">
-        <span className="text-sm text-gray-600">¿No tienes cuenta? </span>
-        <button
-          onClick={() => navigate('/register')}
-          className="text-sm text-blue-600 hover:underline"
-        >
-          Regístrate
-        </button>
       </div>
     </div>
   );
