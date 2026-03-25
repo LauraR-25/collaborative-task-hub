@@ -5,6 +5,7 @@ interface ProjectListProps {
   projects: Project[];
 }
 
+
 const ProjectList = ({ projects }: ProjectListProps) => {
   if (projects.length === 0) {
     return (
