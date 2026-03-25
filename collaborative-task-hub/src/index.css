@@ -80,6 +80,48 @@
     --surface-muted: 220 20% 10%;
     --surface-active: 220 20% 14%;
   }
+
+  /* House themes (applied on <html> via HouseTheme.tsx) */
+  .dark.theme-lannister {
+    /* Gold / crimson accents */
+    --primary: 45 92% 55%;
+    --primary-foreground: 220 20% 8%;
+    --ring: 45 92% 55%;
+    --destructive: 355 68% 38%;
+    --destructive-foreground: 220 14% 96%;
+    --surface: 220 20% 10%;
+    --surface-muted: 220 20% 9%;
+    --surface-active: 220 20% 12%;
+    --accent: 220 20% 14%;
+    --accent-foreground: 220 14% 96%;
+    --font-heading: var(--font-body);
+  }
+
+  .dark.theme-targaryen {
+    /* Dragon red accents */
+    --primary: 6 78% 52%;
+    --primary-foreground: 220 14% 96%;
+    --ring: 6 78% 52%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 220 14% 96%;
+    --surface: 220 20% 11%;
+    --surface-muted: 220 20% 9%;
+    --surface-active: 220 20% 13%;
+    --accent: 220 20% 14%;
+    --accent-foreground: 220 14% 96%;
+  }
+
+  .dark.theme-stark {
+    /* Icy blue accents */
+    --primary: 214 36% 54%;
+    --primary-foreground: 220 20% 8%;
+    --ring: 214 36% 54%;
+    --surface: 220 10% 14%;
+    --surface-muted: 220 10% 12%;
+    --surface-active: 220 10% 16%;
+    --accent: 220 10% 18%;
+    --accent-foreground: 220 14% 96%;
+  }
 }
 
 @layer base {
@@ -89,6 +131,38 @@
 
   body {
     @apply bg-background text-foreground font-body antialiased;
+  }
+
+  /* Optional thematic backdrops (won't break if images are missing) */
+  .dark.theme-lannister body {
+    background-image:
+      linear-gradient(180deg, hsla(var(--background), 0.96), hsla(var(--background), 0.98)),
+      url('/houses/lannister.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+
+  .dark.theme-targaryen body {
+    background-image:
+      linear-gradient(180deg, hsla(var(--background), 0.94), hsla(var(--background), 0.98)),
+      url('/houses/targaryen.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+
+  .dark.theme-stark body {
+    background-image:
+      linear-gradient(180deg, hsla(var(--background), 0.95), hsla(var(--background), 0.99)),
+      url('/houses/stark.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+
+  .dark.theme-targaryen nav {
+    background-image: linear-gradient(90deg, hsla(var(--background), 1), hsla(var(--primary), 0.22));
   }
 
   h1, h2, h3, h4, h5, h6 {

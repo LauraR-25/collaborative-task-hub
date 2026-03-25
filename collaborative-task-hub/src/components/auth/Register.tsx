@@ -44,13 +44,17 @@ const Register = () => {
   return (
     <div className="pt-14">
       <div className="min-h-[calc(100vh-56px)] flex items-center justify-center px-6">
-        <div className="max-w-md w-full mx-auto p-6 bg-white rounded shadow">
-          <h1 className="text-2xl font-bold text-center mb-4">Crear cuenta</h1>
-          <p className="text-center text-gray-600 mb-6">Regístrate para comenzar a gestionar tus tareas.</p>
-          {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
+        <div className="max-w-md w-full mx-auto p-6 bg-surface rounded shadow-[var(--shadow-slab-lg)] border border-border">
+          <h1 className="text-2xl font-bold text-center mb-4 text-foreground">Crear cuenta</h1>
+          <p className="text-center text-muted-foreground mb-6">Regístrate para comenzar a gestionar tus tareas.</p>
+          {error && (
+            <div className="rounded border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive mb-4">
+              {error}
+            </div>
+          )}
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label htmlFor="user" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="user" className="block text-sm font-medium text-foreground">
                 Nombre de usuario
               </label>
               <input
@@ -58,12 +62,12 @@ const Register = () => {
                 id="user"
                 value={user}
                 onChange={(e) => setUser(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                className="mt-1 block w-full border border-input rounded-md bg-background text-foreground p-2"
                 required
               />
             </div>
             <div className="mb-4">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-foreground">
                 Email
               </label>
               <input
@@ -71,12 +75,12 @@ const Register = () => {
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                className="mt-1 block w-full border border-input rounded-md bg-background text-foreground p-2"
                 required
               />
             </div>
             <div className="mb-6">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-foreground">
                 Contraseña
               </label>
               <div className="relative mt-1">
@@ -85,27 +89,30 @@ const Register = () => {
                   id="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full border border-gray-300 rounded-md shadow-sm p-2 pr-24"
+                  className="block w-full border border-input rounded-md bg-background text-foreground p-2 pr-24"
                   minLength={8}
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-blue-600 hover:underline"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-muted-foreground hover:underline"
                   aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
                   {showPassword ? 'Ocultar' : 'Mostrar'}
                 </button>
               </div>
             </div>
-            <button type="submit" className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition">
+            <button
+              type="submit"
+              className="w-full bg-primary text-primary-foreground py-2 px-4 rounded-md transition-colors hover:bg-primary/90"
+            >
               Crear cuenta
             </button>
           </form>
           <div className="text-center mt-4">
-            <span className="text-sm text-gray-600">¿Ya tienes cuenta? </span>
-            <button onClick={() => navigate('/login')} className="text-sm text-blue-600 hover:underline">
+            <span className="text-sm text-muted-foreground">¿Ya tienes cuenta? </span>
+            <button onClick={() => navigate('/login')} className="text-sm text-primary hover:underline">
               Inicia Sesión
             </button>
           </div>

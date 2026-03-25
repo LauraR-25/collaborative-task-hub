@@ -22,7 +22,7 @@ const ProjectItem = ({ project }: ProjectItemProps) => {
 
   return (
     <Link to={`/project/${project.id}`}>
-      <Card className="transition-colors cursor-pointer hover:bg-muted">
+      <Card className="transition-colors cursor-pointer hover:bg-surface-active border-b-2 border-b-primary">
         <CardHeader>
           <CardTitle className="text-lg">{project.name}</CardTitle>
         </CardHeader>

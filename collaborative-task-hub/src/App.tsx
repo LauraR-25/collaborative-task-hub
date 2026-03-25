@@ -4,6 +4,7 @@ import PrivateRoute from '@/components/auth/PrivateRoute';
 import Login from '@/components/auth/Login';
 import Register from '@/components/auth/Register';
 import Navbar from '@/components/layout/Navbar';
+import HouseTheme from '@/components/layout/HouseTheme';
 import ProjectsDashboard from '@/components/ProjectsDashboard'; // nuevo componente
 import TasksTab from '@/pages/TasksTab';
 import Profile from '@/pages/Profile';
@@ -14,6 +15,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <HouseTheme />
         <Navbar />
         <Routes>
           <Route path="/login" element={<Login />} />

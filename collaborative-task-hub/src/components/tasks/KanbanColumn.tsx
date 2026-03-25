@@ -19,7 +19,7 @@ const KanbanColumn = ({ id, title, tasks, onUpdate, onDelete }: KanbanColumnProp
     <Card>
       <CardHeader>
         <CardTitle className="text-base font-semibold flex items-center justify-between">
-          <span>{title}</span>
+          <span className="text-primary">{title}</span>
           <span className="text-sm text-muted-foreground">({tasks.length})</span>
         </CardTitle>
       </CardHeader>
