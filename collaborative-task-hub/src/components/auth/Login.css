@@ -1,11 +1,40 @@
 .login-container {
-  max-width: 400px;
+  width: 360px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 20px;
+  padding: 18px;
   background-color: hsl(var(--surface));
   border-radius: 10px;
   box-shadow: var(--shadow-slab-lg);
   border: 1px solid hsl(var(--border));
+}
+
+.auth-lannister-layout {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 14px;
+  width: min(100%, 760px);
+}
+
+.lannister-logo-panel {
+  width: 360px;
+  max-width: 40vw;
+  border-radius: 10px;
+  border: 1px solid hsla(45, 92%, 55%, 0.34);
+  background: linear-gradient(175deg, hsla(0, 0%, 6%, 0.7), hsla(0, 0%, 2%, 0.78));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.lannister-logo-left {
+  width: min(320px, 100%);
+  height: auto;
+  object-fit: contain;
+  opacity: 0.95;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.55));
 }
 
 .login-title {
@@ -18,7 +47,7 @@
 .login-subtitle {
   text-align: center;
   color: hsl(var(--muted-foreground));
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .login-error {
@@ -28,7 +57,7 @@
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .form-group label {
@@ -81,7 +110,7 @@
 
 .form-button {
   width: 100%;
-  padding: 12px;
+  padding: 10px;
   background-color: hsl(var(--primary));
   color: hsl(var(--primary-foreground));
   border: none;
@@ -123,4 +152,14 @@
 .dark.theme-lannister .login-title,
 .dark.theme-lannister .lannister-panel h1 {
   color: hsl(45 92% 62%);
+}
+
+@media (max-width: 900px) {
+  .auth-lannister-layout {
+    width: min(100%, 420px);
+  }
+
+  .lannister-logo-panel {
+    display: none;
+  }
 }

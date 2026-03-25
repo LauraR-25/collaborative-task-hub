@@ -138,10 +138,14 @@ const Login = () => {
   };
 
   return (
-    <div className="pt-14">
-      <div className="min-h-[calc(100vh-56px)] flex items-center justify-center px-6">
-        <div className="login-container lannister-panel">
-          <img src="/houses/lannister.png" alt="Casa Lannister" className="house-logo" />
+    <div className="min-h-screen pt-14">
+      <div className="min-h-[calc(100vh-56px)] flex items-center justify-center px-6 py-4">
+        <div className="auth-lannister-layout">
+          <div className="lannister-logo-panel" aria-hidden="true">
+            <img src="/houses/lannister.png" alt="Casa Lannister" className="lannister-logo-left" />
+          </div>
+
+          <div className="login-container lannister-panel">
           <div className="house-wordmark">TASKFLOW</div>
           <h1 className="login-title">Iniciar Sesión</h1>
           <p className="login-subtitle">
@@ -260,6 +264,7 @@ const Login = () => {
             <button onClick={() => navigate('/register')} className="text-sm text-blue-600 hover:underline">
               Regístrate
             </button>
+          </div>
           </div>
         </div>
       </div>

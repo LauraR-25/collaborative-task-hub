@@ -8,11 +8,9 @@ interface KanbanColumnProps {
   id: Task['status'];
   title: string;
   tasks: Task[];
-  onUpdate: (id: string, updates: Partial<Omit<Task, 'id' | 'created_at' | 'updated_at'>>) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
 }
 
-const KanbanColumn = ({ id, title, tasks, onUpdate, onDelete }: KanbanColumnProps) => {
+const KanbanColumn = ({ id, title, tasks }: KanbanColumnProps) => {
   const { setNodeRef } = useDroppable({ id });
 
   return (
@@ -27,7 +25,7 @@ const KanbanColumn = ({ id, title, tasks, onUpdate, onDelete }: KanbanColumnProp
         <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-3">
             {tasks.map((task) => (
-              <TaskItem key={task.id} task={task} onUpdate={onUpdate} onDelete={onDelete} />
+              <TaskItem key={task.id} task={task} />
             ))}
           </div>
         </SortableContext>

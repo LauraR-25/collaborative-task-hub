@@ -60,6 +60,13 @@ const TaskForm = ({ onAdd }: TaskFormProps) => {
   const [tagsError, setTagsError] = useState<string | null>(null);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [newTagName, setNewTagName] = useState('');
+  const [igniteOpen, setIgniteOpen] = useState(false);
+  const [igniteCreate, setIgniteCreate] = useState(false);
+
+  const triggerIgnite = (setter: (value: boolean) => void) => {
+    setter(true);
+    setTimeout(() => setter(false), 640);
+  };
 
   const selectedTags = useMemo(
     () => tags.filter((t) => selectedTagIds.includes(t.id)),
@@ -135,7 +142,13 @@ const TaskForm = ({ onAdd }: TaskFormProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button type="button">➕ Nueva Tarea</Button>
+        <Button
+          type="button"
+          className={`fire-button ${igniteOpen ? 'fire-button--ignite' : ''}`}
+          onClick={() => triggerIgnite(setIgniteOpen)}
+        >
+          ➕ Nueva Tarea
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -237,7 +250,10 @@ const TaskForm = ({ onAdd }: TaskFormProps) => {
           <button
             type="submit"
             disabled={committing || !title.trim()}
-            className="flex w-full items-center justify-center bg-primary px-4 py-2 font-heading text-sm font-semibold text-primary-foreground disabled:opacity-50"
+            onClick={() => triggerIgnite(setIgniteCreate)}
+            className={`flex w-full items-center justify-center bg-primary px-4 py-2 font-heading text-sm font-semibold text-primary-foreground disabled:opacity-50 fire-button ${
+              igniteCreate ? 'fire-button--ignite' : ''
+            }`}
           >
             {committing ? (
               <span className="inline-block h-2 w-2 rounded-full bg-primary-foreground animate-heartbeat" />

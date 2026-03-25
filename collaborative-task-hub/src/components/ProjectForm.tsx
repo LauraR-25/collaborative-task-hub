@@ -13,6 +13,13 @@ const ProjectForm = ({ onAdd }: ProjectFormProps) => {
   const [description, setDescription] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [igniteCreate, setIgniteCreate] = useState(false);
+  const [igniteSubmit, setIgniteSubmit] = useState(false);
+
+  const triggerIgnite = (setter: (value: boolean) => void) => {
+    setter(true);
+    setTimeout(() => setter(false), 640);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +41,7 @@ const ProjectForm = ({ onAdd }: ProjectFormProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button className={`fire-button ${igniteCreate ? 'fire-button--ignite' : ''}`} onClick={() => triggerIgnite(setIgniteCreate)}>
           ➕ Nuevo Proyecto
         </Button>
       </DialogTrigger>
@@ -57,7 +64,8 @@ const ProjectForm = ({ onAdd }: ProjectFormProps) => {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full"
+            className={`w-full fire-button ${igniteSubmit ? 'fire-button--ignite' : ''}`}
+            onClick={() => triggerIgnite(setIgniteSubmit)}
           >
             {loading ? 'Creando...' : 'Crear Proyecto'}
           </Button>

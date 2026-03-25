@@ -84,15 +84,6 @@ const KanbanBoard = () => {
     }
   };
 
-  const handleDeleteTask = async (id: string) => {
-    try {
-      await taskService.delete(id);
-      setTasks((prev) => prev.filter((t) => t.id !== id));
-    } catch {
-      setError('Error al eliminar la tarea.');
-    }
-  };
-
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
@@ -161,8 +152,6 @@ const KanbanBoard = () => {
                 id={column.id}
                 title={column.title}
                 tasks={tasks.filter((task) => normalizeStatusForBoard(task.status) === column.id)}
-                onUpdate={handleUpdateTask}
-                onDelete={handleDeleteTask}
               />
             ))}
           </div>
