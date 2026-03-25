@@ -1,12 +1,12 @@
 import api from './api';
 
 export interface LoginPayload {
-  name: string;        // IMPORTANTE: el backend usa "name", no email
+  user: string;        // IMPORTANTE: el backend usa "user" como nombre de usuario
   password: string;
 }
 
 export interface RegisterPayload {
-  name: string;
+  user: string;
   email: string;
   password: string;
 }
@@ -15,7 +15,7 @@ export interface AuthResponse {
   access_token: string;
   user_id: string;
   email: string;
-  name: string;
+  user: string;
 }
 
 export interface RefreshResponse {

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
 const Login = () => {
-  const [name, setName] = useState(''); // Cambiado de email a name
+  const [user, setUser] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -15,7 +15,7 @@ const Login = () => {
     e.preventDefault();
     try {
       setError('');
-      await login({ name, password }); // Envía name, no email
+      await login({ user, password });
       navigate('/dashboard');
     } catch (err: any) {
       const apiMessage = err?.response?.data?.message;
@@ -30,12 +30,12 @@ const Login = () => {
       {error && <div className="login-error">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="name">Nombre de usuario</label>
+          <label htmlFor="user">Nombre de usuario</label>
           <input
             type="text"
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            id="user"
+            value={user}
+            onChange={(e) => setUser(e.target.value)}
             className="form-input"
             required
           />

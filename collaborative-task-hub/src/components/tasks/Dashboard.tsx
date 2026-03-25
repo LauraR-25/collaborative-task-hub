@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { taskService, type Task } from '@/services/taskService';
+import { taskService, type Task, type TaskPriority } from '@/services/taskService';
 import TaskForm from './TaskForm';
 import TaskList from './TaskList';
 
@@ -24,7 +24,14 @@ const Dashboard = () => {
     fetchTasks();
   }, [fetchTasks]);
 
-  const handleAdd = async ({ title }: { title: string; tagIds: string[] }) => {
+  const handleAdd = async ({
+    title,
+  }: {
+    title: string;
+    description?: string;
+    priority?: TaskPriority;
+    tagIds: string[];
+  }) => {
     // Esta pantalla no se usa en el flujo principal (router) y no tiene project_id válido.
     // Evitamos enviar un project_id inválido al backend.
     setError('Selecciona un proyecto para crear tareas.');

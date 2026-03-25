@@ -36,11 +36,23 @@ const KanbanBoard = () => {
     fetchData();
   }, [fetchData]);
 
-  const handleAddTask = async ({ title, tagIds }: { title: string; tagIds: string[] }) => {
+  const handleAddTask = async ({
+    title,
+    description,
+    priority,
+    tagIds,
+  }: {
+    title: string;
+    description?: string;
+    priority?: Task['priority'];
+    tagIds: string[];
+  }) => {
     if (!projectId) return;
     try {
       const newTask = await taskService.create({
         title,
+        description,
+        ...(priority ? { priority } : {}),
         status: 'pendiente',
         project_id: projectId,
       });
@@ -57,8 +69,8 @@ const KanbanBoard = () => {
 
   const handleUpdateTask = async (id: string, updates: Partial<Omit<Task, 'id' | 'created_at' | 'updated_at'>>) => {
     try {
-      await taskService.update(id, updates);
-      setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
+      const updated = await taskService.update(id, updates);
+      setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
     } catch {
       setError('Error al actualizar la tarea.');
     }

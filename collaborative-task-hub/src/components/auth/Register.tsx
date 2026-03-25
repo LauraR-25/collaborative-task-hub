@@ -3,7 +3,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
-  const [name, setName] = useState('');
+  const [user, setUser] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -19,7 +19,7 @@ const Register = () => {
         setError('La contraseña debe tener al menos 8 caracteres');
         return;
       }
-      await register({ name, email, password });
+      await register({ user, email, password });
       navigate('/dashboard');
     } catch (err: any) {
       console.error('Register error:', err);
@@ -35,12 +35,12 @@ const Register = () => {
       {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre</label>
+          <label htmlFor="user" className="block text-sm font-medium text-gray-700">Nombre de usuario</label>
           <input
             type="text"
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            id="user"
+            value={user}
+            onChange={(e) => setUser(e.target.value)}
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
             required
           />

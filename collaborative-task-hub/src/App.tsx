@@ -5,6 +5,7 @@ import Login from '@/components/auth/Login';
 import Register from '@/components/auth/Register';
 import Navbar from '@/components/layout/Navbar';
 import ProjectsDashboard from '@/components/ProjectsDashboard'; // nuevo componente
+import TasksTab from '@/pages/TasksTab';
 import KanbanBoard from '@/components/tasks/KanbanBoard';
 import NotFound from './pages/NotFound';
 
@@ -21,6 +22,14 @@ function App() {
             element={
               <PrivateRoute>
                 <ProjectsDashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/tasks"
+            element={
+              <PrivateRoute>
+                <TasksTab />
               </PrivateRoute>
             }
           />

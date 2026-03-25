@@ -3,14 +3,57 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { tagService, type Tag } from '@/services/tagService';
+import { type TaskPriority } from '@/services/taskService';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface TaskFormProps {
-  onAdd: (input: { title: string; tagIds: string[] }) => Promise<void>;
+  onAdd: (input: { title: string; description?: string; priority?: TaskPriority; tagIds: string[] }) => Promise<void>;
 }
+
+const priorityMeta: {
+  value: 'none' | TaskPriority;
+  label: string;
+  dotClass: string;
+  badgeClass: string;
+}[] = [
+  {
+    value: 'none',
+    label: 'Sin prioridad',
+    dotClass: 'bg-gray-400',
+    badgeClass: 'border-gray-200 bg-gray-100 text-gray-700',
+  },
+  {
+    value: 'baja',
+    label: 'Baja',
+    dotClass: 'bg-green-500',
+    badgeClass: 'border-green-200 bg-green-100 text-green-800',
+  },
+  {
+    value: 'media',
+    label: 'Media',
+    dotClass: 'bg-blue-500',
+    badgeClass: 'border-blue-200 bg-blue-100 text-blue-800',
+  },
+  {
+    value: 'alta',
+    label: 'Alta',
+    dotClass: 'bg-purple-500',
+    badgeClass: 'border-purple-200 bg-purple-100 text-purple-800',
+  },
+  {
+    value: 'critica',
+    label: 'Crítica',
+    dotClass: 'bg-red-500',
+    badgeClass: 'border-red-200 bg-red-100 text-red-800',
+  },
+];
 
 const TaskForm = ({ onAdd }: TaskFormProps) => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [priority, setPriority] = useState<'none' | TaskPriority>('none');
   const [committing, setCommitting] = useState(false);
   const [tags, setTags] = useState<Tag[]>([]);
   const [tagsLoading, setTagsLoading] = useState(false);
@@ -70,10 +113,20 @@ const TaskForm = ({ onAdd }: TaskFormProps) => {
     const trimmed = title.trim();
     if (!trimmed) return;
 
+    const trimmedDescription = description.trim();
+    const pickedPriority = priority === 'none' ? undefined : priority;
+
     setCommitting(true);
     await new Promise((resolve) => setTimeout(resolve, 800));
-    await onAdd({ title: trimmed, tagIds: selectedTagIds });
+    await onAdd({
+      title: trimmed,
+      description: trimmedDescription || undefined,
+      priority: pickedPriority,
+      tagIds: selectedTagIds,
+    });
     setTitle('');
+    setDescription('');
+    setPriority('none');
     setSelectedTagIds([]);
     setCommitting(false);
     setOpen(false);
@@ -99,6 +152,42 @@ const TaskForm = ({ onAdd }: TaskFormProps) => {
               placeholder="Nueva tarea..."
               autoFocus
             />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Descripción</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="w-full rounded border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+              placeholder="Descripción (opcional)"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Prioridad</label>
+            <Select value={priority} onValueChange={(v) => setPriority(v as 'none' | TaskPriority)}>
+              <SelectTrigger aria-label="Prioridad">
+                <SelectValue placeholder="Selecciona prioridad…" />
+              </SelectTrigger>
+              <SelectContent>
+                {priorityMeta.map((p) => (
+                  <SelectItem key={p.value} value={p.value}>
+                    <div className="flex items-center gap-2">
+                      <span className={`h-2.5 w-2.5 rounded-full ${p.dotClass}`} aria-hidden="true" />
+                      <span>{p.label}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="text-xs text-muted-foreground">
+              Seleccionada:{' '}
+              <Badge variant="outline" className={priorityMeta.find((p) => p.value === priority)?.badgeClass}>
+                {priorityMeta.find((p) => p.value === priority)?.label}
+              </Badge>
+            </div>
           </div>
 
           <div className="space-y-2">

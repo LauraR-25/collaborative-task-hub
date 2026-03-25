@@ -1,5 +1,6 @@
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { NavLink } from "@/components/NavLink";
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -17,6 +18,22 @@ const Navbar = () => {
       </span>
       {user && (
         <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
+            <NavLink
+              to="/dashboard"
+              className="font-heading text-sm font-medium text-muted-foreground"
+              activeClassName="text-foreground"
+            >
+              Proyectos
+            </NavLink>
+            <NavLink
+              to="/tasks"
+              className="font-heading text-sm font-medium text-muted-foreground"
+              activeClassName="text-foreground"
+            >
+              Tareas
+            </NavLink>
+          </div>
           <span className="font-body text-sm text-muted-foreground">
             {user.name}
           </span>
